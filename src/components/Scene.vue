@@ -124,9 +124,47 @@ export default {
       }
     })
 
-    // eslint-disable-next-line
-    const movePlaneByBrain = function() {
+    // actions
+    const MOVE_LEFT = 0
+    const MOVE_RIGHT = 1
+    const actions = [MOVE_LEFT, MOVE_RIGHT]
 
+    //states
+    const ballStatesX = 10
+    const ballStatesY = 10
+    const playerStates = 10
+    const statesToQidx =
+      (a, b, c) => ballStatesX*ballStatesY*a + playerStates*b + c
+    const pixelToState = (px, states) => Math.floor(px/states)
+
+    // Q table
+    const _Q = []
+    const initQ = function() {
+      const states = ballStatesX * ballStatesY * playerStates
+      for (let i=0; i<states; i++)
+        _Q[i] = [0, 0]
+    }
+    initQ()
+
+    const Q = function(playerPos, ballPosX, ballPosY, action) {
+      const playerState = pixelToState(playerPos, playerStates)
+      const ballStateX = pixelToState(ballPosX, ballStatesX)
+      const ballStateY = pixelToState(ballPosY, ballStatesY)
+      const state = statesToQidx(playerState, ballStateX, ballStateY)
+      return _Q[state][action]
+    }
+    const maxQoverActions = function(pos) {
+      return Math.max(Q(pos, MOVE_LEFT), Q(pos, MOVE_RIGHT))
+    }
+
+    // eslint-disable-next-line
+    let eps = 1
+    const movePlaneByBrain = function() {
+      let action = (Math.random() > eps) ?
+        // exploit
+        null :
+        // explore
+        actions[10*Math.random()%2]
     }
 
     const movePlaneByKeyboard = function() {
