@@ -1,48 +1,63 @@
 <template>
   <div>
-    <scene :brain="brain"></scene>
   </div>
 </template>
 
 <script>
-//import brainjs from "brain.js"
-
-import scene from "./components/Scene.vue"
+import brainjs from "brain.js"
+import env from "./environment.js"
+import replayMem from "./replay-memory.js"
 
 export default {
   name: 'app',
-  data () {
-    return {
-      brain: null
-    }
-  },
   mounted () {
-    //const log = console.log
-    //let brain = this.brain = new brainjs.NeuralNetwork()
-    //const stats = brain.train([
-    //  { input: [0.1], output: [0] },
-    //  { input: [0.2], output: [0] },
-    //  { input: [0.3], output: [0] }
-    //])
-    //log("Net stats:", stats)
 
-    //log(brain.run([0.4]))
+    /* setup neural net */
+    const config = {
+      hiddenLayers: [100],
+      activation: "relu"
+    }
+    const net = new brainjs.NeuralNetworl(config)
+    const maxRewardAction = function(state) {
+      const { Stay, MoveLeft, MoveRight } = env.actions
+      let rewards = []
+      rewards[Stay] = net.run({ ...state, action: Stay })
+      rewards[MoveLeft] = net.run({ ...state, action: MoveLeft })
+      rewards[MoveRight] = net.run({ ...state, action: MoveRight })
+      return rewards.indexOf(Math.max(...rewards))
+    }
+    const randomAction = function() {
+      return Math.floor(Math.random()*Object.entries(env.actions).length)
+    }
 
-    //brain.train([
-    //  { input: [0.4], output: [0] },
-    //])
-    //log(brain.run([0.4]))
 
-    //brain.train([
-    //  { input: [1.0], output: [0] },
-    //])
-    //log(brain.run([0.4]))
+    /* mount dom */
+    this.$el.appendChild(env.domElement)
 
-  },
-  methods: {
-  },
-  components: {
-    scene
+    /* starts simulation loop */
+    let simulationLoop = function () {
+      requestAnimationFrame(simulationLoop)
+
+      const oldState = env.getState()
+
+      /* choose action */
+      const actionId = (Math.random() > 0.1) ?
+        maxRewardAction(oldState) :
+        randomAction()
+
+      const reward = env.simulateStep(actionId)
+      const newState = env.getState()
+      replayMem.storeExp(oldState, actionId, reward, newState)
+      const exp = replayMem.getRandomSampleBatch(10)
+      
+      /* train net */
+      net.train(exp.map(({oldState, action, reward, newState}) => ({
+        input: { ...oldState, action },
+        output: { reward: reward + 0.95 * maxRewardAction(newState) }
+      })))
+    }
+    simulationLoop()
+
   }
 }
 </script>
