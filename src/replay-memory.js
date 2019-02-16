@@ -2,7 +2,7 @@ const memorySize = 100
 const replayMem = []
 
 /* store experience */
-replayMem.storeExp = (oldState, actionId, reward, newState) => {
+replayMem.storeExp = function(oldState, actionId, reward, newState) {
   this.push({oldState, actionId, reward, newState})
   if (this.length > memorySize)
     this.shift()

@@ -34,14 +34,13 @@ let ball = new THREE.Mesh(ballGeo, ballMat);
 scene.add(ball);
 
 /* logic */
-let ballSpeed = 12
+let ballSpeed = 10
 let ballDir = null
 const resetBall = function() {
   const lin = (x, A, B) => (1-x)*A + x*B
-  const rnd = Math.random
-  ballDir = new THREE.Vector3(lin(rnd(), -1, 1), -1, 0)
+  ballDir = new THREE.Vector3(lin(Math.random(), -1, 1), -1, 0)
   ball.position.x = 0
-  ball.position.y = 0.75*wh
+  ball.position.y = 0.4*wh
 }
 resetBall()
 
