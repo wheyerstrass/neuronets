@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div class="net"> Net Stats: {{ net }} </div>
+    <div class="net">
+      <p><b>net stats</b></p>
+      <hr>
+      <p>Error: {{ net.error.toFixed(2) }}</p>
+      <p>Epochs: {{ epochs }}</p>
+    </div>
   </div>
 </template>
 
@@ -13,7 +18,8 @@ export default {
   name: 'app',
   data () {
     return {
-      net: {}
+      net: { error: -1 },
+      epochs: 0
     }
   },
   mounted () {
@@ -66,7 +72,7 @@ export default {
 
       /* train net */
       if (!training) {
-        console.log("Training now...")
+        ctx.epochs++
         training = true
         const exp = replayMem.getRandomSampleBatch(10)
         trainData.push(...exp.map(({oldState, action, reward, newState}) => ({
